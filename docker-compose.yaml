@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+
+  postgres-db:
+    container_name: postgres-db
+    image: postgres:16-bookworm
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    restart: on-failure
+    env_file: .env
+    ports:
+      - '${POSTGRES_PORT}:${POSTGRES_PORT}'
+    volumes:
+      - postgresql:/data/postgresql
+      - ./files/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+      - ./files/postgresql.conf:/etc/postgresql/postgresql.conf
+    networks:
+      - netty
+  
+  bank-api:
+    image: cosmtrek/air
+    container_name: bank-api
+    restart: on-failure
+    env_file: 
+      - .env
+    ports:
+      -  '${PORT}:${PORT}'
+    volumes:
+      - '../fairmoney_interview_test:/fairmoney_interview_test'
+    working_dir: '/fairmoney_interview_test'
+    networks:
+      - netty
+
+networks:
+  netty:
+    driver: bridge
+
+volumes:
+  postgresql:
